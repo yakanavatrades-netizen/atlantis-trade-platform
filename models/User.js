@@ -1,13 +1,12 @@
+import mongoose, { Schema } from "mongoose";
 
-import mongoose from "mongoose";
-
-const UserSchema = new mongoose.Schema(
+const UserSchema = new Schema(
   {
+    name: { type: String },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, default: "member" }, // member | admin
-    name: { type: String },
-    membershipActive: { type: Boolean, default: false },
+    role: { type: String, default: "member" },
+    membershipActive: { type: Boolean, default: false }
   },
   { timestamps: true }
 );
