@@ -1,0 +1,1 @@
+export default function Page(){return <h1>Atlantis Trade Platform</h1>}
