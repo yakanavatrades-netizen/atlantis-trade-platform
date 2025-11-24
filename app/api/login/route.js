@@ -2,30 +2,29 @@
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
 
 export async function POST(req) {
   try {
     await connectDB();
-    const { email, password, name } = await req.json();
 
-    if (!email || !password)
-      return new Response("Missing data", { status: 400 });
+    const { email, password } = await req.json();
 
-    const userExists = await User.findOne({ email });
-    if (userExists)
-      return new Response("Email already registered", { status: 409 });
+    const user = await User.findOne({ email });
+    if (!user) return new Response("Invalid credentials", { status: 401 });
 
-    const hashed = await bcrypt.hash(password, 10);
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return new Response("Invalid credentials", { status: 401 });
 
-    await User.create({
-      email,
-      password: hashed,
-      name,
-      role: "member",
-      membershipActive: false,
+    // Create secure cookie session
+    cookies().set("sessionUser", user._id.toString(), {
+      httpOnly: true,
+      secure: true,
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
-    return new Response("User created", { status: 201 });
+    return new Response("Login success", { status: 200 });
   } catch (error) {
     return new Response("Server error", { status: 500 });
   }
